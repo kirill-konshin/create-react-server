@@ -1,0 +1,37 @@
+{
+  "name": "react-router-redux-middleware",
+  "version": "1.0.3",
+  "description": "Middleware for React + Router + Redux with Server Side Rendering",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo 'No tests so far'"
+  },
+  "author": "Kirill Konshin",
+  "devDependencies": {
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "react-redux": "^5.0.3",
+    "react-router": "^3.0.2"
+  },
+  "dependencies": {
+    "memory-fs": "^0.4.1"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-dom": "*",
+    "react-redux": "*",
+    "react-router": "3.*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/kirill-konshin/react-router-redux-middleware.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kirill-konshin/react-router-redux-middleware/issues"
+  },
+  "homepage": "https://github.com/kirill-konshin/react-router-redux-middleware",
+  "engines": {
+    "node": ">=0.10.36"
+  },
+  "license": "MIT"
+}
