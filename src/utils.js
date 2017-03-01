@@ -55,7 +55,7 @@ function renderFullPage(config, options) {
 
         return parsedTemplate.replace(
             '<head>', // this should be the first script on a page so that others can pick it up
-            '<head>\n<script type="text/javascript">window["' + options.initialStateKey + '"] = ' + JSON.stringify(config.store.getState()) + ';</script>'
+            '<head><script type="text/javascript">window["' + options.initialStateKey + '"] = ' + JSON.stringify(config.store.getState()) + ';</script>'
         );
 
     });
