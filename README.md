@@ -118,13 +118,15 @@ const port = process.env.PORT || 3000;
 
 const options = {
     createRouter: createRouter,
-    createStore: createStore,
-    initialState: {
+    createStore: ({req, res}) => (createStore({
         foo: Date.now() // pre-populate something right here
-    },
+    })),
     initialStateKey: '__PRELOADED_STATE__', // !!!!! MUST MATCH THE CLIENT
-    mountNode: '<div id="app"></div>', // !!!!! MUST MATCH THE CLIENT
-    mountNodeTemplate: (html) => `<div id="app">${html}</div>`,
+    template: ({template, html}) => (template.replace(
+        // !!!!! MUST MATCH THE INDEX.HTML
+        `<div id="app"></div>`,
+        `<div id="app">${html}</div>`
+    )),
     templatePath: path.join(config.output.path, 'index.html'),
     outputPath: config.output.path
 };
