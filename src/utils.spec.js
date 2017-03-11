@@ -33,6 +33,7 @@ test('renderFullPage', async() => {
 
     const options = {
         initialStateKey: 'initialStateKey',
+        initialPropsKey: 'initialPropsKey',
         template: jest.fn(({template, html}) => (template.replace('<!--html-->', html)))
     };
 
@@ -40,6 +41,7 @@ test('renderFullPage', async() => {
     const template = '<html><head></head><body><div id="app"><!--html--></div></body></html>';
     const expected = '<html><head>' +
                      '<script type="text/javascript">window["initialStateKey"] = {"baz":"qux"};</script>' +
+                     '<script type="text/javascript">window["initialPropsKey"] = {"foo":"bar"};</script>' +
                      '</head><body><div id="app">html</div></body></html>';
 
     const config = {

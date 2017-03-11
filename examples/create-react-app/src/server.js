@@ -13,12 +13,15 @@ const outputPath = path.join(process.cwd(), 'build');
 
 skipRequireExtensions();
 
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled rejection:', reason.stack || reason);
+});
+
 app.use(createExpressMiddleware({
     createRouter: (history) => (createRouter(history)),
     createStore: ({req, res}) => (createStore({
         foo: req.url + ':' + Date.now()
     })),
-    initialStateKey: '__PRELOADED_STATE__',
     template: ({template, html, req}) => {
 
         //@see https://github.com/nfl/react-helmet#server-usage

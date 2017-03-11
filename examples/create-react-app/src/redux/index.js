@@ -3,11 +3,11 @@ import createLogger from "redux-logger";
 import thunk from "redux-thunk";
 import promiseMiddleware from "redux-promise-middleware";
 
-function foo(state = 'foo', {type, payload}) {
+function foo(state = 'initial', {type, payload}) {
     return state;
 }
 
-function bar(state = 'bar', {type, payload}) {
+function bar(state = 'initial', {type, payload}) {
     switch (type) {
         case 'BAR_SUCCESS':
             return payload;

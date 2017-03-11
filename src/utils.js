@@ -1,5 +1,6 @@
 var path = require("path");
 var Provider = require("react-redux").Provider;
+var WrapperProvider = require("./wrapper").WrapperProvider;
 var renderToString = require("react-dom/server").renderToString;
 var React = require("react");
 var ReactRouter = require("react-router");
@@ -46,7 +47,9 @@ function renderFullPage(config, options) {
 
     return parsedTemplate.replace(
         '<head>', // this should be the first script on a page so that others can pick it up
-        '<head><script type="text/javascript">window["' + options.initialStateKey + '"] = ' + JSON.stringify(config.store.getState()) + ';</script>'
+        '<head>' +
+        '<script type="text/javascript">window["' + options.initialStateKey + '"] = ' + JSON.stringify(config.store.getState()) + ';</script>' +
+        '<script type="text/javascript">window["' + options.initialPropsKey + '"] = ' + JSON.stringify(config.initialProps) + ';</script>'
     );
 
 }
@@ -83,7 +86,7 @@ function middleware(options, routes, history, templatePromise, req, res, next) {
 
         if (error) {
             return sendError({
-                core: 502,
+                code: 502,
                 error: error,
                 req: req,
                 res: res
@@ -116,7 +119,6 @@ function middleware(options, routes, history, templatePromise, req, res, next) {
 
             if (Cmp && Cmp[options.getInitialPropsKey]) {
                 initialProps = Cmp[options.getInitialPropsKey]({
-                    history: history,
                     location: renderProps.location,
                     params: renderProps.params,
                     query: renderProps.query,
@@ -134,13 +136,18 @@ function middleware(options, routes, history, templatePromise, req, res, next) {
 
         }).then(function(result) {
 
-            var Cmp = result[0]; //TODO Wrap component and inject initialProps if possible
+            var Cmp = result[0];
             var initialProps = result[1];
+
             var html = renderToString(
                 React.createElement(
-                    Provider,
-                    {store: store},
-                    React.createElement(RouterContext, renderProps)
+                    WrapperProvider,
+                    {initialProps: initialProps},
+                    React.createElement(
+                        Provider,
+                        {store: store},
+                        React.createElement(RouterContext, renderProps)
+                    )
                 )
             );
 
@@ -148,8 +155,6 @@ function middleware(options, routes, history, templatePromise, req, res, next) {
             // console.log('Store state before rendering', store.getState());
 
             res.status(Cmp && !Cmp[options.notFoundKey] ? 200 : 404);
-
-            console.log(result);
 
             return renderFullPage({
                 template: result[2],

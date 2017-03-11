@@ -62,6 +62,7 @@ function createWebpackMiddleware(compiler, webpackConfig) {
  * @param {string} [options.getInitialPropsKey]
  * @param {string} [options.notFoundKey]
  * @param {string} [options.initialStateKey]
+ * @param {string} [options.initialPropsKey]
  * @return {Function}
  */
 function createExpressMiddleware(options) {
@@ -77,6 +78,7 @@ function createExpressMiddleware(options) {
     options.getInitialPropsKey = options.getInitialPropsKey || 'getInitialProps';
     options.notFoundKey = options.notFoundKey || 'notFound';
     options.initialStateKey = options.initialStateKey || '__INITIAL__STATE__';
+    options.initialPropsKey = options.initialPropsKey || '__INITIAL__PROPS__';
     options.errorTemplate = options.errorTemplate || utils.errorTemplate;
 
     var history = createMemoryHistory();

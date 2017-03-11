@@ -22,6 +22,7 @@ App.getInitialProps = ({store}) => {
     if (store.getState().foo === 'initial') {
         store.dispatch({type: 'FOO', payload: 'dispatched'});
     }
+    return {custom: 'initial'};
 };
 App = connect(state => state)(App);
 
@@ -96,6 +97,7 @@ test('createExpressMiddleware e2e', async() => {
         const expected = (
             '<html><head>' +
             '<script type="text/javascript">window["__INITIAL__STATE__"] = {"foo":"dispatched"};</script>' +
+            '<script type="text/javascript">window["__INITIAL__PROPS__"] = {"custom":"initial"};</script>' +
             '</head><body><div id="app">' +
             '<span data-reactroot="" data-reactid="1" data-react-checksum="1511724113">dispatched</span>' +
             '</div></body></html>'
@@ -122,6 +124,7 @@ test('createExpressMiddleware e2e with initial state', async() => {
             .toBe(
                 '<html><head>' +
                 '<script type="text/javascript">window["__INITIAL__STATE__"] = {"foo":"overridden"};</script>' +
+                '<script type="text/javascript">window["__INITIAL__PROPS__"] = {"custom":"initial"};</script>' +
                 '</head><body><div id="app">' +
                 '<span data-reactroot="" data-reactid="1" data-react-checksum="1534858346">overridden</span>' +
                 '</div></body></html>'
@@ -143,6 +146,7 @@ test('createExpressMiddleware e2e 404', async() => {
             .toBe(
                 '<html><head>' +
                 '<script type="text/javascript">window["__INITIAL__STATE__"] = {"foo":"initial"};</script>' +
+                '<script type="text/javascript">window["__INITIAL__PROPS__"] = null;</script>' +
                 '</head><body><div id="app">' +
                 '<span data-reactroot="" data-reactid="1" data-react-checksum="790238053">NotFound</span>' +
                 '</div></body></html>'

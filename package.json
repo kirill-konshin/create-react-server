@@ -1,6 +1,6 @@
 {
   "name": "react-router-redux-middleware",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Middleware for React + Router + Redux with Server Side Rendering",
   "main": "src/index.js",
   "scripts": {
@@ -17,6 +17,7 @@
     "node-fetch": "^1.6.3"
   },
   "dependencies": {
+    "hoist-non-react-statics": "^1.2.0",
     "memory-fs": "^0.4.1"
   },
   "peerDependencies": {
