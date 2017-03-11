@@ -5,9 +5,6 @@ var MemoryFileSystem = require('memory-fs');
 var createMemoryHistory = require("react-router").createMemoryHistory;
 var utils = require('./utils');
 
-var middleware = utils.middleware;
-var errorTemplate = utils.errorTemplate;
-
 var ignoreUrls = [
     '/',
     '/index.html'
@@ -80,12 +77,13 @@ function createExpressMiddleware(options) {
     options.getInitialPropsKey = options.getInitialPropsKey || 'getInitialProps';
     options.notFoundKey = options.notFoundKey || 'notFound';
     options.initialStateKey = options.initialStateKey || '__INITIAL__STATE__';
-    options.errorTemplate = options.errorTemplate || errorTemplate;
+    options.errorTemplate = options.errorTemplate || utils.errorTemplate;
 
     var history = createMemoryHistory();
     var routes = options.createRouter(history);
+    var templatePromise = utils.waitForTemplate(options);
 
-    return middleware.bind(null, options, routes, history);
+    return utils.middleware.bind(null, options, routes, history, templatePromise);
 
 }
 

@@ -49,7 +49,7 @@ const defaultOptions = {
     templatePath: '/foo',
     outputPath: '/bar',
     template: ({template, html}) => (template.replace('<!--html-->', html)),
-    errorTemplate: ({html, code, error}) => (html ? html : ('[' + code + ']:' + error.message)),
+    errorTemplate: ({html, code, error}) => (html ? html : ('[' + code + ']:' + error.stack)),
     debug: true
 };
 
@@ -155,7 +155,8 @@ test('createExpressMiddleware e2e 404', async() => {
 test('createExpressMiddleware e2e 500', async() => {
 
     const options = createOptions({
-        template: () => { return null; }
+        template: () => { return null; },
+        errorTemplate: ({html, code, error}) => (html ? html : ('[' + code + ']:' + error.message))
     });
 
     options.fs.writeFileSync('/foo', template, 'utf-8');
@@ -172,7 +173,8 @@ test('createExpressMiddleware e2e 500', async() => {
 test('createExpressMiddleware e2e 500 with bad component', async() => {
 
     const options = createOptions({
-        template: () => { return null; }
+        template: () => { return null; },
+        errorTemplate: ({html, code, error}) => (html ? html : ('[' + code + ']:' + error.message))
     });
 
     options.fs.writeFileSync('/foo', template, 'utf-8');

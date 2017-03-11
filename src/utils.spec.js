@@ -10,14 +10,10 @@ test('waitForTemplate', async() => {
     };
 
     options.fs.writeFileSync('/foo', 'bar', 'utf-8');
-
-    // actual version
     expect(await waitForTemplate(options)).toBe('bar');
 
     options.fs.writeFileSync('/foo', 'baz', 'utf-8');
-
-    // cached version
-    expect(await waitForTemplate(options)).toBe('bar');
+    expect(await waitForTemplate(options)).toBe('baz');
 
 });
 
@@ -36,11 +32,15 @@ test('errorTemplate', () => {
 test('renderFullPage', async() => {
 
     const options = {
-        fs: new MemoryFileSystem(),
-        templatePath: '/foo',
         initialStateKey: 'initialStateKey',
         template: jest.fn(({template, html}) => (template.replace('<!--html-->', html)))
     };
+
+
+    const template = '<html><head></head><body><div id="app"><!--html--></div></body></html>';
+    const expected = '<html><head>' +
+                     '<script type="text/javascript">window["initialStateKey"] = {"baz":"qux"};</script>' +
+                     '</head><body><div id="app">html</div></body></html>';
 
     const config = {
         component: 'component',
@@ -48,15 +48,9 @@ test('renderFullPage', async() => {
         initialProps: {foo: 'bar'},
         store: {getState: () => ({baz: 'qux'})},
         req: 'req',
-        res: 'res'
+        res: 'res',
+        template: template
     };
-
-    const template = '<html><head></head><body><div id="app"><!--html--></div></body></html>';
-    const expected = '<html><head>' +
-                     '<script type="text/javascript">window["initialStateKey"] = {"baz":"qux"};</script>' +
-                     '</head><body><div id="app">html</div></body></html>';
-
-    options.fs.writeFileSync('/foo', template, 'utf-8');
 
     expect(await renderFullPage(config, options)).toBe(expected);
 

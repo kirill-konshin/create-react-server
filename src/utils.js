@@ -17,21 +17,14 @@ function waitForTemplate(options) {
 
     return (new Promise(function(resolve) {
 
-        if (!options.fs.existsSync(options.templatePath) || !options.__templateHtml) {
+        var interval = setInterval(function() {
 
-            var interval = setInterval(function() {
+            if (options.fs.existsSync(options.templatePath)) {
+                clearInterval(interval);
+                resolve(options.fs.readFileSync(options.templatePath).toString());
+            }
 
-                if (options.fs.existsSync(options.templatePath)) {
-                    options.__templateHtml = options.fs.readFileSync(options.templatePath).toString(); //FIXME
-                    clearInterval(interval);
-                    resolve(options.__templateHtml);
-                }
-
-            }, 200);
-
-        } else {
-            resolve(options.__templateHtml);
-        }
+        }, 200);
 
     }));
 
@@ -39,26 +32,22 @@ function waitForTemplate(options) {
 
 function renderFullPage(config, options) {
 
-    return waitForTemplate(options).then(function(templateHtml) {
-
-        var parsedTemplate = options.template({
-            component: config.component,
-            html: config.html,
-            initialProps: config.initialProps,
-            store: config.store,
-            req: config.req,
-            res: config.res,
-            template: templateHtml
-        });
-
-        if (typeof parsedTemplate !== 'string') throw new Error('Return type of options.template() has to be a string');
-
-        return parsedTemplate.replace(
-            '<head>', // this should be the first script on a page so that others can pick it up
-            '<head><script type="text/javascript">window["' + options.initialStateKey + '"] = ' + JSON.stringify(config.store.getState()) + ';</script>'
-        );
-
+    var parsedTemplate = options.template({
+        component: config.component,
+        html: config.html,
+        initialProps: config.initialProps,
+        store: config.store,
+        req: config.req,
+        res: config.res,
+        template: config.template
     });
+
+    if (typeof parsedTemplate !== 'string') throw new Error('Return type of options.template() has to be a string');
+
+    return parsedTemplate.replace(
+        '<head>', // this should be the first script on a page so that others can pick it up
+        '<head><script type="text/javascript">window["' + options.initialStateKey + '"] = ' + JSON.stringify(config.store.getState()) + ';</script>'
+    );
 
 }
 
@@ -71,7 +60,7 @@ function errorTemplate(config) {
     );
 }
 
-function middleware(options, routes, history, req, res, next) {
+function middleware(options, routes, history, templatePromise, req, res, next) {
 
     var location = history.createLocation(req.url);
     var store = options.createStore({req: req, res: res});
@@ -102,32 +91,31 @@ function middleware(options, routes, history, req, res, next) {
         }
 
         if (renderProps === null) {
-            return sendError({
-                code: 404,
-                html: renderFullPage({
+            return templatePromise.then(function(template) {
+                sendError({
+                    code: 404,
+                    html: renderFullPage({
+                        template: template,
+                        req: req,
+                        res: res,
+                        component: null,
+                        initialProps: null,
+                        html: '',
+                        store: store
+                    }, options),
                     req: req,
-                    res: res,
-                    component: null,
-                    initialProps: null,
-                    html: '',
-                    store: store
-                }, options),
-                req: req,
-                res: res
-            }, options);
+                    res: res
+                }, options);
+            });
         }
 
         new Promise(function(resolve) {
 
             var Cmp = renderProps.components[renderProps.components.length - 1].WrappedComponent;
+            var initialProps = null;
 
-            if (!Cmp || !Cmp[options.getInitialPropsKey]) {
-                return resolve([Cmp]);
-            }
-
-            resolve(Promise.all([
-                Cmp,
-                Cmp[options.getInitialPropsKey]({
+            if (Cmp && Cmp[options.getInitialPropsKey]) {
+                initialProps = Cmp[options.getInitialPropsKey]({
                     history: history,
                     location: renderProps.location,
                     params: renderProps.params,
@@ -135,7 +123,13 @@ function middleware(options, routes, history, req, res, next) {
                     req: req,
                     res: res,
                     store: store
-                })
+                });
+            }
+
+            resolve(Promise.all([
+                Cmp,
+                initialProps,
+                templatePromise
             ]));
 
         }).then(function(result) {
@@ -155,7 +149,10 @@ function middleware(options, routes, history, req, res, next) {
 
             res.status(Cmp && !Cmp[options.notFoundKey] ? 200 : 404);
 
+            console.log(result);
+
             return renderFullPage({
+                template: result[2],
                 component: Cmp,
                 html: html,
                 initialProps: initialProps,
