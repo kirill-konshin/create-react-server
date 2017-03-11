@@ -33,7 +33,6 @@
     "redux-logger": "^2.8.1",
     "redux-promise-middleware": "^4.2.0",
     "redux-thunk": "^2.2.0",
-    "striptags": "^3.0.1",
     "webpack": "^2.2.1",
     "webpack-dev-server": "^2.4.1"
   },

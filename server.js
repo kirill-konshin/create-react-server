@@ -2,7 +2,7 @@ import path from "path";
 import Express from "express";
 import webpack from "webpack";
 import Server from "webpack-dev-server";
-import striptags from "striptags";
+import {rewind} from "react-helmet";
 import createRouter from "./demo/router";
 import createStore from "./demo/redux/createStore";
 import config from "./webpack.config";
@@ -24,22 +24,22 @@ const options = {
     initialStateKey: '__PRELOADED_STATE__',
     template: ({template, html, req}) => {
 
-        template = template.replace(
-            `<div id="app"></div>`,
-            `<div id="app">${html}</div>`
-        );
+        //@see https://github.com/nfl/react-helmet#server-usage
+        const head = rewind();
 
-        const match = /<h1[^>]*>(.*?)<\/h1>/gi.exec(html);
-
-        if (match) {
-            const title = match[1];
-            template = template.replace(
+        return template
+            .replace(
+                `<div id="app"></div>`,
+                `<div id="app">${html}</div>`
+            )
+            .replace(
                 /<title>.*?<\/title>/g,
-                '<title>' + striptags(match[1]) + '</title>'
+                head.title.toString()
+            )
+            .replace(
+                /<html>/g,
+                '<html ' + head.htmlAttributes.toString() + '>'
             );
-        }
-
-        return template;
 
     },
     templatePath: path.join(config.output.path, 'index.html'),
