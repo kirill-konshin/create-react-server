@@ -1,0 +1,40 @@
+{
+  "name": "create-react-app-test",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "clean": "rimraf ./build*/*",
+    "start": "react-scripts start",
+    "build": "npm run clean && react-scripts build && npm run build-server",
+    "build-server": "NODE_ENV=production babel --source-maps --out-dir build-lib src",
+    "server": "node ./build-lib/server.js"
+  },
+  "babel": {
+    "presets": [
+      "react-app"
+    ],
+    "plugins": [
+      "transform-ensure-ignore"
+    ]
+  },
+  "dependencies": {
+    "es6-promise": "^4.1.0",
+    "isomorphic-fetch": "^2.2.1",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "react-helmet": "^4.0.0",
+    "react-redux": "^5.0.3",
+    "react-router": "^3.0.2",
+    "redux": "^3.6.0",
+    "redux-logger": "^2.8.2",
+    "redux-promise-middleware": "^4.2.0",
+    "redux-thunk": "^2.2.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.23.0",
+    "babel-plugin-transform-ensure-ignore": "^0.1.0",
+    "express": "^4.15.2",
+    "react-scripts": "^0.9.5",
+    "rimraf": "^2.6.1"
+  }
+}
