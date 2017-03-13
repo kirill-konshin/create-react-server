@@ -9,4 +9,4 @@ deploy:
   skip_cleanup: true
   on:
     tags: true
-    repo: kirill-konshin/react-router-redux-middleware
+    repo: kirill-konshin/create-react-server

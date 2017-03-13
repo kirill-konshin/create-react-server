@@ -1,6 +1,6 @@
 {
-  "name": "react-router-redux-middleware",
-  "version": "1.2.0",
+  "name": "create-react-server",
+  "version": "0.1.0",
   "description": "Middleware for React + Router + Redux with Server Side Rendering",
   "main": "src/index.js",
   "scripts": {
@@ -28,12 +28,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/kirill-konshin/react-router-redux-middleware.git"
+    "url": "git://github.com/kirill-konshin/rcreate-react-server.git"
   },
   "bugs": {
-    "url": "https://github.com/kirill-konshin/react-router-redux-middleware/issues"
+    "url": "https://github.com/kirill-konshin/create-react-server/issues"
   },
-  "homepage": "https://github.com/kirill-konshin/react-router-redux-middleware",
+  "homepage": "https://github.com/kirill-konshin/create-react-server",
   "engines": {
     "node": ">=0.10.36"
   },

@@ -1,6 +1,4 @@
 {
-  "name": "webpack-blocks-test",
-  "version": "0.0.0",
   "private": true,
   "scripts": {
     "clean": "rimraf ./build/*",
