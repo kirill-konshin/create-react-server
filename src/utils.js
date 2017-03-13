@@ -85,6 +85,7 @@ function middleware(options, routes, history, templatePromise, req, res, next) {
         }
 
         if (error) {
+            //TODO Find how to test
             return sendError({
                 code: 502,
                 error: error,
@@ -94,6 +95,7 @@ function middleware(options, routes, history, templatePromise, req, res, next) {
         }
 
         if (renderProps === null) {
+            //TODO Find how to test
             return templatePromise.then(function(template) {
                 sendError({
                     code: 404,
@@ -114,23 +116,29 @@ function middleware(options, routes, history, templatePromise, req, res, next) {
 
         new Promise(function(resolve) {
 
-            var Cmp = renderProps.components[renderProps.components.length - 1].WrappedComponent;
-            var initialProps = null;
+            var Cmp = renderProps.components[renderProps.components.length - 1]; // it used to be .WrappedComponent but it's useless, users can find it themselves if needed
 
-            if (Cmp && Cmp[options.getInitialPropsKey]) {
-                initialProps = Cmp[options.getInitialPropsKey]({
-                    location: renderProps.location,
-                    params: renderProps.params,
-                    query: renderProps.query,
-                    req: req,
-                    res: res,
-                    store: store
+            // console.log('Found Component', Cmp.getInitialProps);
+
+            function getInitialProps() {
+                return new Promise(function(resolve) {
+                    resolve((Cmp && Cmp.getInitialProps) ? Cmp.getInitialProps({
+                        location: renderProps.location,
+                        params: renderProps.params,
+                        query: renderProps.query,
+                        req: req,
+                        res: res,
+                        store: store
+                    }) : null);
+                }).catch(function(e) {
+                    // console.log('Recovering after getInitialProps error', e);
+                    return {initialError: e.message || e.toString()};
                 });
             }
 
             resolve(Promise.all([
                 Cmp,
-                initialProps,
+                getInitialProps(),
                 templatePromise
             ]));
 
@@ -138,6 +146,9 @@ function middleware(options, routes, history, templatePromise, req, res, next) {
 
             var Cmp = result[0];
             var initialProps = result[1];
+
+            // console.log('Setting context initial props', initialProps);
+            // console.log('Store state before rendering', store.getState());
 
             var html = renderToString(
                 React.createElement(
@@ -151,10 +162,7 @@ function middleware(options, routes, history, templatePromise, req, res, next) {
                 )
             );
 
-            // console.log('Initial props', initialProps);
-            // console.log('Store state before rendering', store.getState());
-
-            res.status(Cmp && !Cmp[options.notFoundKey] ? 200 : 404);
+            res.status(Cmp && !Cmp.notFound ? 200 : 404);
 
             return renderFullPage({
                 template: result[2],

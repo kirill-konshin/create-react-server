@@ -3,20 +3,30 @@ import Express from "express";
 import MemoryFileSystem from "memory-fs";
 import React from "react";
 import {createStore} from "redux";
-import {Redirect, Route, Router} from "react-router";
+import {Redirect, Route, Router, withRouter} from "react-router";
 import {connect} from "react-redux";
 import {createExpressMiddleware} from "./index";
+import {withWrapper} from "./wrapper";
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
 
+// NOT FOUND
 let NotFound = () => (<span>NotFound</span>);
 NotFound.notFound = true;
 
+// COMPONENT WITH BAD RENDER
 let BadComponent = () => { throw new Error('Bad Component'); };
 
-let App = ({foo}) => (<span>{foo}</span>);
+// COMPONENT WITH BAD INITIAL PROPS
+let BadInitialProps = ({initialError}) => (<div>{initialError.message}</div>);
+BadInitialProps.getInitialProps = () => { throw new Error('Bad Initial Props'); };
+BadInitialProps = withWrapper(BadInitialProps);
+BadInitialProps = withRouter(BadInitialProps); // adding withRouter to make life harder
+
+// MAIN APP
+let App = ({foo, custom}) => (<span>{foo + '|' + custom}</span>);
 App.getInitialProps = ({store}) => {
     // DISPATCH ONLY HAPPENS IF STATE IS INITIAL
     if (store.getState().foo === 'initial') {
@@ -25,6 +35,7 @@ App.getInitialProps = ({store}) => {
     return {custom: 'initial'};
 };
 App = connect(state => state)(App);
+App = withWrapper(App);
 
 const reducer = (state = {foo: 'initial'}, {type, payload}) => {
     if (type === 'FOO') return {foo: payload};
@@ -36,8 +47,9 @@ const makeStore = (initialState) => (createStore(reducer, initialState));
 const makeRouter = (history) => (
     <Router history={history}>
         <Redirect from="/redirect" to="/"/>
-        <Route path='/' getComponent={() => (Promise.resolve(App))}/>
+        <Route path='/' getComponent={() => new Promise((res) => { setTimeout(() => res(App), 10); })}/>
         <Route path='/bad' component={BadComponent}/>
+        <Route path='/badInitial' component={BadInitialProps}/>
         <Route path='*' component={NotFound}/>
     </Router>
 );
@@ -99,7 +111,7 @@ test('createExpressMiddleware e2e', async() => {
             '<script type="text/javascript">window["__INITIAL__STATE__"] = {"foo":"dispatched"};</script>' +
             '<script type="text/javascript">window["__INITIAL__PROPS__"] = {"custom":"initial"};</script>' +
             '</head><body><div id="app">' +
-            '<span data-reactroot="" data-reactid="1" data-react-checksum="1511724113">dispatched</span>' +
+            '<span data-reactroot="" data-reactid="1" data-react-checksum="289216439">dispatched|initial</span>' +
             '</div></body></html>'
         );
 
@@ -126,7 +138,7 @@ test('createExpressMiddleware e2e with initial state', async() => {
                 '<script type="text/javascript">window["__INITIAL__STATE__"] = {"foo":"overridden"};</script>' +
                 '<script type="text/javascript">window["__INITIAL__PROPS__"] = {"custom":"initial"};</script>' +
                 '</head><body><div id="app">' +
-                '<span data-reactroot="" data-reactid="1" data-react-checksum="1534858346">overridden</span>' +
+                '<span data-reactroot="" data-reactid="1" data-react-checksum="325457872">overridden|initial</span>' +
                 '</div></body></html>'
             );
 
@@ -187,6 +199,28 @@ test('createExpressMiddleware e2e 500 with bad component', async() => {
 
         expect(await (await fetch('http://localhost:3333/bad')).text())
             .toBe('[500]:Bad Component');
+
+    });
+
+});
+
+test('createExpressMiddleware e2e with bad initialProps', async() => {
+
+    const options = createOptions({});
+
+    options.fs.writeFileSync('/foo', template, 'utf-8');
+
+    return await serverTest(options, async(server) => {
+
+        expect(await (await fetch('http://localhost:3333/badInitial')).text())
+            .toBe(
+                '<html><head>' +
+                '<script type="text/javascript">window["__INITIAL__STATE__"] = {"foo":"initial"};</script>' +
+                '<script type="text/javascript">window["__INITIAL__PROPS__"] = {"initialError":"Bad Initial Props"};</script>' +
+                '</head><body><div id="app">' +
+                '<div data-reactroot="" data-reactid="1" data-react-checksum="-1262873217">Bad Initial Props</div>' +
+                '</div></body></html>'
+            );
 
     });
 

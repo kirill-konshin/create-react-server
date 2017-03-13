@@ -75,8 +75,6 @@ function createExpressMiddleware(options) {
 
     options.ignoreUrls = options.ignoreUrls || ignoreUrls;
     options.fs = options.fs || fs;
-    options.getInitialPropsKey = options.getInitialPropsKey || 'getInitialProps';
-    options.notFoundKey = options.notFoundKey || 'notFound';
     options.initialStateKey = options.initialStateKey || '__INITIAL__STATE__';
     options.initialPropsKey = options.initialPropsKey || '__INITIAL__PROPS__';
     options.errorTemplate = options.errorTemplate || utils.errorTemplate;

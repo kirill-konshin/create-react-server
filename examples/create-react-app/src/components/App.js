@@ -30,7 +30,7 @@ export class App extends Component {
 
         const {foo, bar, custom, initialError} = this.props;
 
-        if (initialError) return <div>Error: {initialError.toString()}</div>;
+        if (initialError) return <pre>Initial Error: {initialError.stack}</pre>;
 
         if (bar === 'initial' || bar === 'loading') return <Loading state={bar}/>;
 

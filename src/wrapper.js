@@ -3,7 +3,9 @@ var withRouter = require('react-router').withRouter;
 var hoistStatics = require('hoist-non-react-statics');
 var lib = require('./lib');
 
-var isBrowser = (typeof window !== 'undefined');
+function isNode() {
+    return (typeof process === 'object' && process + '' === '[object process]');
+}
 
 function getDisplayName(Cmp) {
     return Cmp.displayName || Cmp.name || 'Component';
@@ -24,11 +26,12 @@ function withWrapper(Cmp) {
 
             var initialProps = this.context.getInitialProps();
 
-            return {
-                loading: false,
-                props: initialProps,
-                error: null
-            };
+            // console.log('Initial props from context', initialProps);
+
+            return lib.extends({}, initialProps || {}, {
+                initialLoading: !initialProps, // no props means it will load
+                initialError: initialProps && initialProps.initialError && new Error(initialProps.initialError) // it comes as string
+            });
 
         },
 
@@ -38,11 +41,7 @@ function withWrapper(Cmp) {
 
             // On NodeJS setState is a no-op, besides, getInitialProps will be called by server rendering procedure
             // On client side this function should not be called if props were passed from server
-            if (!isBrowser || this.state.props) return;
-
-            self.setState({
-                loading: true
-            });
+            if (isNode() || !this.state.initialLoading) return;
 
             new Promise(function(res) {
 
@@ -57,20 +56,18 @@ function withWrapper(Cmp) {
 
             }).then(function(props) {
 
-                self.setState({
-                    loading: false,
-                    props: props,
-                    error: null
-                });
+                self.setState(lib.extends({}, props, {
+                    initialLoading: false,
+                    initialError: null
+                }));
 
             }).catch(function onError(e) {
 
                 console.error(Wrapper.displayName + '.getInitialProps has failed:', e);
 
                 self.setState({
-                    loading: false,
-                    props: null,
-                    error: e
+                    initialLoading: false,
+                    initialError: e
                 });
 
             });
@@ -83,14 +80,8 @@ function withWrapper(Cmp) {
 
             return React.createElement(
                 Cmp,
-                lib.extends(
-                    { //TODO Add mapping function
-                        initialError: this.state.error,
-                        initialLoading: this.state.loading
-                    },
-                    this.state.props,
-                    props
-                ),
+                //TODO Add mapping function
+                lib.extends({}, this.state, props),
                 this.props.children
             );
 
@@ -124,19 +115,18 @@ var WrapperProvider = React.createClass({
     },
 
     getChildContext: function getChildContext() {
+        var self = this;
         return {
-            getInitialProps: this.getInitialProps
+            getInitialProps: function() {
+                var initialProps = self.initialProps;
+                self.initialProps = null; // initial props can be used only once
+                return initialProps;
+            }
         };
     },
 
     getInitialState: function getInitialState() {
-        var self = this;
         this.initialProps = this.props.initialProps;
-        this.getInitialProps = function() {
-            var initialProps = self.initialProps;
-            self.initialProps = null; // initial props can be used only once
-            return initialProps;
-        };
         return {};
     },
 
