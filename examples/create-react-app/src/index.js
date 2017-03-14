@@ -2,25 +2,24 @@ import "es6-promise/auto";
 import "isomorphic-fetch";
 import React from "react";
 import {render} from "react-dom";
-import {browserHistory} from "react-router";
+import {browserHistory, Router} from "react-router";
 import {Provider} from "react-redux";
-import {WrapperProvider} from "../../../wrapper";
+import {WrapperProvider} from "../../../wrapper"; // this should be create-react-server/wrapper
 
-import createRouter from "./router";
-import createStore from "./redux";
-
-const mountNode = document.getElementById('root');
-const store = createStore(window.__INITIAL__STATE__);
+import createRoutes from "./routes";
+import createStore from "./store";
 
 const Root = () => (
-    <Provider store={store}>
+    <Provider store={createStore(window.__INITIAL__STATE__)}>
         <WrapperProvider initialProps={window.__INITIAL__PROPS__}>
-            {createRouter(browserHistory)}
+            <Router history={browserHistory}>
+                {createRoutes()}
+            </Router>
         </WrapperProvider>
     </Provider>
 );
 
-render((<Root/>), mountNode);
+render((<Root/>), document.getElementById('root'));
 
 if (module.hot) module.hot.accept();
 

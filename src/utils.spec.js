@@ -1,6 +1,7 @@
-import {renderFullPage, waitForTemplate, errorTemplate} from "./utils";
-import MemoryFileSystem from "memory-fs";
 import React from "react";
+import MemoryFileSystem from "memory-fs";
+import {errorTemplate, renderHTML, waitForTemplate} from "./utils";
+import "./test";
 
 test('waitForTemplate', async() => {
 
@@ -19,24 +20,21 @@ test('waitForTemplate', async() => {
 
 test('errorTemplate', () => {
 
-    expect(errorTemplate({html: 'foo'})).toBe('foo');
+    expect(errorTemplate({error: {code: 400, message: 'message', stack: 'stack'}}))
+        .toBe('<h1>400 Server Error</h1><pre>stack</pre>');
 
-    expect(errorTemplate({code: 400, error: {message: 'message', stack: 'stack'}}))
-        .toBe('<h1>400 Server Error</h1><h2>message</h2><pre>stack</pre>');
-
-    expect(errorTemplate({code: 400, error: 'string'}))
-        .toBe('<h1>400 Server Error</h1><h2>string</h2><pre>string</pre>');
+    expect(errorTemplate({error: 'string'}))
+        .toBe('<h1>undefined Server Error</h1><pre>string</pre>');
 
 });
 
-test('renderFullPage', async() => {
+test('renderHTML', async() => {
 
     const options = {
         initialStateKey: 'initialStateKey',
         initialPropsKey: 'initialPropsKey',
         template: jest.fn(({template, html}) => (template.replace('<!--html-->', html)))
     };
-
 
     const template = '<html><head></head><body><div id="app"><!--html--></div></body></html>';
     const expected = '<html><head>' +
@@ -54,13 +52,18 @@ test('renderFullPage', async() => {
         template: template
     };
 
-    expect(await renderFullPage(config, options)).toBe(expected);
+    expect(await renderHTML(config, options)).toBe(expected);
 
     expect(options.template.mock.calls[0][0].component).toEqual('component');
     expect(options.template.mock.calls[0][0].html).toEqual('html');
     expect(options.template.mock.calls[0][0].initialProps).toEqual({foo: 'bar'});
     expect(options.template.mock.calls[0][0].store.getState()).toEqual({baz: 'qux'});
     expect(options.template.mock.calls[0][0].req).toEqual('req');
-    expect(options.template.mock.calls[0][0].template).toEqual(template);
+    expect(options.template.mock.calls[0][0].template).toEqual(
+        '<html><head>' +
+        '<script type="text/javascript">window["initialStateKey"] = {"baz":"qux"};</script>' +
+        '<script type="text/javascript">window["initialPropsKey"] = {"foo":"bar"};</script>' +
+        '</head><body><div id="app"><!--html--></div></body></html>'
+    );
 
 });

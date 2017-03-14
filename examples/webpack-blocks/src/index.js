@@ -2,12 +2,14 @@ import React from "react";
 import {render} from "react-dom";
 import {Provider} from "react-redux";
 import {browserHistory, match, Router} from "react-router";
+import {WrapperProvider} from "../../../wrapper"; // this should be create-react-server/wrapper
 
-import createRouter from "./router";
-import createStore from "./redux/createStore";
+// Create React App does not allow to create common library outside its' src dir, so we import from there
+import createRoutes from "../../create-react-app/src/routes";
+import createStore from "../../create-react-app/src/store";
 
 const rootEl = document.getElementById('app');
-const store = createStore(window.__PRELOADED_STATE__);
+const store = createStore(window.__INITIAL__STATE__);
 
 function renderRoutes(routes, store, mountNode) {
 
@@ -15,7 +17,9 @@ function renderRoutes(routes, store, mountNode) {
 
         render((
             <Provider store={store}>
-                <Router {...renderProps} />
+                <WrapperProvider initialProps={window.__INITIAL__PROPS__}>
+                    <Router {...renderProps} />
+                </WrapperProvider>
             </Provider>
         ), mountNode);
 
@@ -23,11 +27,11 @@ function renderRoutes(routes, store, mountNode) {
 
 }
 
-renderRoutes(createRouter(browserHistory), store, rootEl);
+renderRoutes(createRoutes(browserHistory), store, rootEl);
 
 if (module.hot) {
-    module.hot.accept('./router', () => {
-        const nextRoutes = require('./router').default;
+    module.hot.accept('../../create-react-app/src/routes', () => {
+        const nextRoutes = require('../../create-react-app/src/routes').default;
         renderRoutes(nextRoutes(browserHistory), store, rootEl);
     });
 }

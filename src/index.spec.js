@@ -3,27 +3,15 @@ import Express from "express";
 import MemoryFileSystem from "memory-fs";
 import React from "react";
 import {createStore} from "redux";
-import {Redirect, Route, Router, withRouter} from "react-router";
+import {Redirect, Route, withRouter} from "react-router";
 import {connect} from "react-redux";
 import {createExpressMiddleware} from "./index";
 import {withWrapper} from "./wrapper";
+import "./test";
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
-
-// NOT FOUND
-let NotFound = () => (<span>NotFound</span>);
-NotFound.notFound = true;
-
-// COMPONENT WITH BAD RENDER
-let BadComponent = () => { throw new Error('Bad Component'); };
-
-// COMPONENT WITH BAD INITIAL PROPS
-let BadInitialProps = ({initialError}) => (<div>{initialError.message}</div>);
-BadInitialProps.getInitialProps = () => { throw new Error('Bad Initial Props'); };
-BadInitialProps = withWrapper(BadInitialProps);
-BadInitialProps = withRouter(BadInitialProps); // adding withRouter to make life harder
 
 // MAIN APP
 let App = ({foo, custom}) => (<span>{foo + '|' + custom}</span>);
@@ -44,26 +32,26 @@ const reducer = (state = {foo: 'initial'}, {type, payload}) => {
 
 const makeStore = (initialState) => (createStore(reducer, initialState));
 
-const makeRouter = (history) => (
-    <Router history={history}>
+const makeRouter = () => (
+    <Route path='/' getComponent={() => new Promise((res) => { setTimeout(() => res(App), 10); })}>
         <Redirect from="/redirect" to="/"/>
-        <Route path='/' getComponent={() => new Promise((res) => { setTimeout(() => res(App), 10); })}/>
-        <Route path='/bad' component={BadComponent}/>
-        <Route path='/badInitial' component={BadInitialProps}/>
-        <Route path='*' component={NotFound}/>
-    </Router>
+    </Route>
 );
 
 const template = '<html><head></head><body><div id="app"><!--html--></div></body></html>';
 
+const simpleErrorTemplate = (error) => ('[' + error.code + ']:' + error.message);
+
 const defaultOptions = {
-    createRouter: (history) => (makeRouter(history)),
+    createRoutes: (history) => (makeRouter(history)),
     createStore: ({req, res}) => (makeStore()),
     templatePath: '/foo',
     outputPath: '/bar',
-    template: ({template, html}) => (template.replace('<!--html-->', html)),
-    errorTemplate: ({html, code, error}) => (html ? html : ('[' + code + ']:' + error.stack)),
-    debug: true
+    template: ({template, html, error}) => {
+        if (!!error) return simpleErrorTemplate(error);
+        return template.replace('<!--html-->', html);
+    },
+    debug: false
 };
 
 const createOptions = (options = {}) => ({
@@ -98,7 +86,7 @@ const serverTest = (options, test) => {
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
-test('createExpressMiddleware e2e', async() => {
+test('createExpressMiddleware e2e success', async() => {
 
     const options = createOptions();
 
@@ -148,7 +136,12 @@ test('createExpressMiddleware e2e with initial state', async() => {
 
 test('createExpressMiddleware e2e 404', async() => {
 
-    const options = createOptions();
+    let NotFound = () => (<span>NotFound</span>);
+    NotFound.notFound = true;
+
+    const options = createOptions({
+        createRoutes: (history) => (<Route path='*' component={NotFound}/>)
+    });
 
     options.fs.writeFileSync('/foo', template, 'utf-8');
 
@@ -158,7 +151,7 @@ test('createExpressMiddleware e2e 404', async() => {
             .toBe(
                 '<html><head>' +
                 '<script type="text/javascript">window["__INITIAL__STATE__"] = {"foo":"initial"};</script>' +
-                '<script type="text/javascript">window["__INITIAL__PROPS__"] = null;</script>' +
+                '<script type="text/javascript">window["__INITIAL__PROPS__"] = {};</script>' +
                 '</head><body><div id="app">' +
                 '<span data-reactroot="" data-reactid="1" data-react-checksum="790238053">NotFound</span>' +
                 '</div></body></html>'
@@ -168,19 +161,20 @@ test('createExpressMiddleware e2e 404', async() => {
 
 });
 
-test('createExpressMiddleware e2e 500', async() => {
+test('createExpressMiddleware e2e 500 error in template', async() => {
 
     const options = createOptions({
-        template: () => { return null; },
-        errorTemplate: ({html, code, error}) => (html ? html : ('[' + code + ']:' + error.message))
+        template: () => (null)
     });
 
     options.fs.writeFileSync('/foo', template, 'utf-8');
 
     return await serverTest(options, async(server) => {
 
-        expect(await (await fetch('http://localhost:3333/')).text())
-            .toBe('[500]:Return type of options.template() has to be a string');
+        const text = await (await fetch('http://localhost:3333/')).text();
+
+        expect(text).toContain('<h1>500 Server Error</h1>');
+        expect(text).toContain('Return type of options.template() has to be a string');
 
     });
 
@@ -188,9 +182,10 @@ test('createExpressMiddleware e2e 500', async() => {
 
 test('createExpressMiddleware e2e 500 with bad component', async() => {
 
+    let BadComponent = () => { throw new Error('Bad Component'); };
+
     const options = createOptions({
-        template: () => { return null; },
-        errorTemplate: ({html, code, error}) => (html ? html : ('[' + code + ']:' + error.message))
+        createRoutes: (history) => (<Route path='/bad' component={BadComponent}/>)
     });
 
     options.fs.writeFileSync('/foo', template, 'utf-8');
@@ -206,7 +201,14 @@ test('createExpressMiddleware e2e 500 with bad component', async() => {
 
 test('createExpressMiddleware e2e with bad initialProps', async() => {
 
-    const options = createOptions({});
+    let BadInitialProps = ({initialError}) => (<div>{initialError.message}</div>);
+    BadInitialProps.getInitialProps = () => { throw new Error('Bad Initial Props'); };
+    BadInitialProps = withWrapper(BadInitialProps);
+    BadInitialProps = withRouter(BadInitialProps); // adding withRouter to make life harder
+
+    const options = createOptions({
+        createRoutes: (history) => (<Route path='/badInitial' component={BadInitialProps}/>)
+    });
 
     options.fs.writeFileSync('/foo', template, 'utf-8');
 
@@ -221,6 +223,52 @@ test('createExpressMiddleware e2e with bad initialProps', async() => {
                 '<div data-reactroot="" data-reactid="1" data-react-checksum="-1262873217">Bad Initial Props</div>' +
                 '</div></body></html>'
             );
+
+    });
+
+});
+
+test('createExpressMiddleware e2e w/o store', async() => {
+
+    let NoStoreComponent = ({foo}) => (<div>{foo}</div>);
+    NoStoreComponent.getInitialProps = () => ({foo: 'initial'});
+    NoStoreComponent = withWrapper(NoStoreComponent);
+
+    const options = createOptions({
+        createStore: null,
+        createRoutes: (history) => (<Route path='/noStore' component={NoStoreComponent}/>)
+    });
+
+    options.fs.writeFileSync('/foo', template, 'utf-8');
+
+    return await serverTest(options, async(server) => {
+
+        expect(await (await fetch('http://localhost:3333/noStore')).text())
+            .toBe(
+                '<html><head>' +
+                '<script type="text/javascript">window["__INITIAL__STATE__"] = undefined;</script>' +
+                '<script type="text/javascript">window["__INITIAL__PROPS__"] = {"foo":"initial"};</script>' +
+                '</head><body><div id="app">' +
+                '<div data-reactroot="" data-reactid="1" data-react-checksum="-228912572">initial</div>' +
+                '</div></body></html>'
+            );
+
+    });
+
+});
+
+test('createExpressMiddleware e2e hard 404', async() => {
+
+    const options = createOptions({
+        createRoutes: (history) => (<Route path='/' getComponent={() => { throw new Error('Should not be reached'); }}/>)
+    });
+
+    options.fs.writeFileSync('/foo', template, 'utf-8');
+
+    return await serverTest(options, async(server) => {
+
+        expect(await (await fetch('http://localhost:3333/404')).text())
+            .toBe('[404]:Route Not Found');
 
     });
 

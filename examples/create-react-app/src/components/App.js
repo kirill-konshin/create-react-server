@@ -1,10 +1,11 @@
 import React, {Component} from "react";
 import {connect} from "react-redux";
-import {withWrapper} from "../../../../wrapper";
-import {barAction} from "../redux";
+import {Link} from "react-router";
+import {withWrapper} from "../../../../wrapper"; // this should be create-react-server/wrapper
+import {barAction} from "../store";
 import Helmet from "./Helmet";
 
-const Loading = ({state}) => (<div>{state}...</div>);
+const Loading = ({state}) => (<div>Loading: {state}...</div>);
 
 export class App extends Component {
 
@@ -18,13 +19,19 @@ export class App extends Component {
      */
     static async getInitialProps({location, query, params, store}) {
 
-        console.log('getInitialProps');
+        console.log('getInitialProps before dispatch', store.getState().bar);
 
         await store.dispatch(barAction());
 
-        return {custom: 'custom'};
+        console.log('getInitialProps after dispatch', store.getState().bar);
+
+        return {custom: 'custom' + Date.now()};
 
     };
+
+    getPropsAgain(){
+        this.props.getInitialProps();
+    }
 
     render() {
 
@@ -35,10 +42,13 @@ export class App extends Component {
         if (bar === 'initial' || bar === 'loading') return <Loading state={bar}/>;
 
         return (
-            <div className="container">
+            <div>
                 <Helmet title='Index'/>
                 <h1>Index</h1>
                 <div>Foo {foo}, Bar {bar}, Custom {custom}</div>
+                <button onClick={this.getPropsAgain.bind(this)}>Get Props Again</button>
+                <hr/>
+                <Link to="/page">Open page</Link>
             </div>
         );
 

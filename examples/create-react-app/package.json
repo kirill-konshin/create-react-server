@@ -1,11 +1,9 @@
 {
   "private": true,
   "scripts": {
-    "clean": "rimraf ./build*/*",
     "start": "react-scripts start",
-    "build": "npm run clean && react-scripts build && npm run build-server",
-    "build-server": "NODE_ENV=production babel --source-maps --out-dir build-lib src",
-    "server": "node ./build-lib/server.js",
+    "build": "react-scripts build",
+    "server": "node ../../src/server.js --createRoutes src/routes.js --createStore src/store.js --template template.js",
     "redeploy": "npm run build && npm run server"
   },
   "babel": {
@@ -30,10 +28,7 @@
     "redux-thunk": "^2.2.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.23.0",
     "babel-plugin-transform-ensure-ignore": "^0.1.0",
-    "express": "^4.15.2",
-    "react-scripts": "^0.9.5",
-    "rimraf": "^2.6.1"
+    "react-scripts": "^0.9.5"
   }
 }

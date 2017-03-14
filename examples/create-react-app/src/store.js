@@ -31,7 +31,13 @@ export function barAction() {
 
 const isBrowser = (typeof window !== 'undefined');
 
-export default function configureStore(initialState) {
+export default function configureStore(initialState, {req, res} = {}) {
+
+    if (!initialState && req) {
+        initialState = {foo: 'server'};
+    }
+
+    console.log('Store created with initial state', initialState);
 
     let middlewares = [
         promiseMiddleware({

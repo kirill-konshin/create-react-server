@@ -1,6 +1,2 @@
-.idea
 build
 build-lib
-coverage
-node_modules
-npm-debug*

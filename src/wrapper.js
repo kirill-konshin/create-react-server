@@ -43,15 +43,14 @@ function withWrapper(Cmp) {
             // On client side this function should not be called if props were passed from server
             if (isNode() || !this.state.initialLoading) return;
 
-            new Promise(function(res) {
+            return new Promise(function(res) {
 
                 res(Cmp.getInitialProps ? Cmp.getInitialProps({
                     location: self.props.location,
                     params: self.props.params,
-                    query: self.props.query,
                     req: null,
                     res: null,
-                    store: self.context.store
+                    store: self.context.store //FIXME Brutal access to Redux Provider's store
                 }) : null);
 
             }).then(function(props) {
@@ -74,6 +73,29 @@ function withWrapper(Cmp) {
 
         },
 
+        getInitialProps: function getInitialProps() {
+
+            var self = this;
+
+            return new Promise(function(resolve) {
+
+                if (self.state.initialLoading) {
+                    console.warn(Wrapper.displayName + '.getInitialProps is already pending, make sure you won\'t have race condition');
+                }
+
+                self.state = {};
+
+                self.setState({
+                    initialLoading: true,
+                    initialError: null
+                }, function() {
+                    resolve(self.componentWillMount());
+                });
+
+            });
+
+        },
+
         render: function render() {
 
             var props = lib.objectWithoutProperties(this.props, ["children"]);
@@ -81,7 +103,7 @@ function withWrapper(Cmp) {
             return React.createElement(
                 Cmp,
                 //TODO Add mapping function
-                lib.extends({}, this.state, props),
+                lib.extends({getInitialProps: this.getInitialProps}, this.state, props),
                 this.props.children
             );
 

@@ -6,7 +6,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = createConfig([
     entryPoint({
-        index: './demo/index.js'
+        index: './src/index.js'
     }),
     setOutput({
         path: __dirname + '/build',
@@ -16,8 +16,8 @@ module.exports = createConfig([
     }),
     babel({
         cacheDirectory: true,
-        presets: ['react-app'],
-        plugins: ['syntax-dynamic-import']
+        presets: [require.resolve('babel-preset-react-app')],
+        plugins: [require.resolve('babel-plugin-syntax-dynamic-import')]
     }),
     defineConstants({
         'process.env.NODE_ENV': process.env.NODE_ENV
@@ -25,7 +25,7 @@ module.exports = createConfig([
     env('development', [
         devServer({
             port: process.env.PORT || 3000,
-            contentBase: './demo',
+            contentBase: './src',
             stats: {colors: true}
         })
     ]),
@@ -33,9 +33,9 @@ module.exports = createConfig([
     addPlugins([
         new HtmlWebpackPlugin({
             filename: 'index.html',
-            favicon: './demo/favicon.ico',
+            favicon: './src/favicon.ico',
             chunks: ['common', 'index'],
-            template: './demo/index.html'
+            template: './src/index.html'
         })
     ])
 ]);
