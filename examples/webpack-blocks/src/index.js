@@ -8,7 +8,7 @@ import {WrapperProvider} from "../../../wrapper"; // this should be create-react
 import createRoutes from "../../create-react-app/src/routes";
 import createStore from "../../create-react-app/src/store";
 
-const rootEl = document.getElementById('app');
+const rootEl = document.getElementById('root');
 const store = createStore(window.__INITIAL__STATE__);
 
 function renderRoutes(routes, store, mountNode) {

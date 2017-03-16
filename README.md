@@ -8,6 +8,7 @@ Webpack Dev Middleware for simple and painless development and production usage.
 *This package is formerly known as `react-router-redux-middleware` (which is now deprecated).*
 
 - [Installation](#installation)
+- [Examples](#examples)
 - [Preconditions](#preconditions)
 - [CLI mode](#cli-mode) — simple integration with Create React App (aka React Scripts)
 - [Config](#config)
@@ -24,6 +25,23 @@ npm install create-react-server babel-preset-react-app --save-dev
 ```
 
 You don't have to install `babel-preset-react-app` if you use Create React App, it will be pre-installed already.
+
+## Examples
+
+- With Create React App: [examples/create-react-app](https://github.com/kirill-konshin/create-react-server/tree/master/examples/create-react-app)
+- With Webpack Blocks (custom webpack config, server, dev middleware): [examples/webpack-blocks](https://github.com/kirill-konshin/create-react-server/tree/master/examples/webpack-blocks)
+
+In order to use examples you should clone the repository and do `npm install` inside the repo and then separate
+`npm install` in example dir.
+
+```bash
+git clone https://github.com/kirill-konshin/create-react-server.git
+cd create-react-server
+npm install
+cd examples/[any-example]
+npm install
+npm run redeploy # launch in production mode
+```
 
 ## Preconditions
 
@@ -135,7 +153,10 @@ import {createStore} from "redux";
 
 function reducer(state, action) { return state; }
 
-export default function (initialState) {
+export default function (initialState, {req, res}) {
+    if (req) { // it means it's launched from server in CLI mode
+        initialState = {foo: res.url}; // so we can pre-populate something
+    }
     return createStore(
         reducer,
         initialState
