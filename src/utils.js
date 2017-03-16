@@ -1,18 +1,8 @@
 var path = require("path");
-var Provider = require("react-redux").Provider;
-var WrapperProvider = require("./wrapper").WrapperProvider;
 var renderToString = require("react-dom/server").renderToString;
 var React = require("react");
-var ReactRouter = require("react-router");
+var StaticRouter = require("react-router").StaticRouter;
 var lib = require("./lib");
-
-var match = ReactRouter.match;
-var RouterContext = ReactRouter.RouterContext;
-
-var roots = [
-    '/',
-    '/index.html'
-];
 
 var httpCodes = {
     redirect: 301,
@@ -30,12 +20,8 @@ function isRedirect(res) {
 
 function setErrorStatus(res, e) {
 
-    e.code = e.code || httpCodes.internalServerError;
-
     res.statusMessage = e.message || e;
-    res.status(e.code);
-
-    return e;
+    res.status(httpCodes.internalServerError);
 
 }
 
@@ -83,7 +69,7 @@ function renderHTML(config, options) {
 
 function errorTemplate(config) {
     return (
-        "<h1>" + config.error.code + " Server Error</h1>" +
+        "<h1>" + httpCodes.internalServerError + " Server Error</h1>" +
         "<pre>" + (config.error.stack || config.error) + "</pre>"
     );
 }
@@ -99,112 +85,72 @@ function defaultTemplate(config) {
 
 }
 
-function middleware(options, routes, history, template, req, res, next) {
+function middleware(options, template, req, res) {
 
-    var Cmp, renderProps, store, initialProps; // these vars are passes all the way
+    var initialProps, context = {}; // these vars are passes all the way
 
     return (new Promise(function performRouting(resolve, reject) {
 
-        ['createRoutes'].forEach((k) => {
+        ['app'].forEach((k) => {
             if (!options[k]) throw new Error('Mandatory option not defined: ' + k);
         });
 
-        options.initialStateKey = options.initialStateKey || '__INITIAL__STATE__';
-        options.initialPropsKey = options.initialPropsKey || '__INITIAL__PROPS__';
-        options.createStore = options.createStore || null;
-        options.outputPath = options.outputPath || path.join(process.cwd(), 'build');
-        options.templatePath = options.templatePath || path.join(options.outputPath, 'index.html');
-        options.template = options.template || defaultTemplate;
+        var initialHtml = renderToString(React.createElement(
+            StaticRouter,
+            {location: req.url, context: context},
+            options.app({
+                props: undefined,
+                req: req,
+                res: res,
+                state: undefined
+            })
+        ));
 
-        var location = history.createLocation(req.url);
+        // console.log('Context', context);
 
-        if (
-            options.fs.existsSync(path.join(options.outputPath, location.pathname)) &&
-            !~roots.indexOf(location.pathname)
-        ) {
-            if (options.debug) console.log('Static', location.pathname);
-            next();
-            var e = new Error('Static');
-            e.static = true;
-            return reject(e);
+        if (context.url) {
+            res.redirect(httpCodes.redirect, context.url); //TODO Handle context.code
+            return reject(new Error('Redirect'));
         }
 
-        match({routes: routes, location: location}, function(error, redirectLocation, props) {
-
-            renderProps = props;
-
-            var e;
-
-            if (options.debug) console.log('Rendering', location.pathname + location.search);
-
-            if (redirectLocation) {
-                res.redirect(httpCodes.redirect, redirectLocation.pathname + redirectLocation.search);
-                e = new Error('Redirect');
-                e.code = httpCodes.redirect;
-                return reject(e);
-            }
-
-            // TODO Find how to test
-            if (error) {
-                error.code = httpCodes.notImplemented;
-                return reject(error);
-            }
-
-            // This is hard 404 which means router failed to load any page
-            if (!renderProps) {
-                e = new Error('Route Not Found');
-                e.code = httpCodes.notFound;
-                return reject(e);
-            }
-
-            resolve();
-
-        });
+        resolve(initialHtml);
 
     })).then(function getInitialPropsOfComponent() {
 
-        store = options.createStore ? options.createStore({req: req, res: res}) : null;
-
-        Cmp = renderProps.components[renderProps.components.length - 1]; // it used to be .WrappedComponent but it's useless, users can find it themselves if needed
-
-        // console.log('Found Component', Cmp.getInitialProps);
-
-        return new Promise(function(resolve) {
-            resolve((Cmp && Cmp.getInitialProps) ? Cmp.getInitialProps({
-                location: renderProps.location,
-                params: renderProps.params,
+        return (new Promise(function(resolve) {
+            resolve((context.getInitialProps) ? context.getInitialProps({
+                location: context.location,
                 req: req,
                 res: res,
-                store: store
+                store: context.store
             }) : null);
         }).catch(function(e) {
             return {initialError: e.message || e.toString()};
-        });
+        }));
 
     }).then(function renderApp(props) {
 
         initialProps = props || {}; // client relies on truthy value of server-rendered props
 
         // console.log('Setting context initial props', initialProps);
-        // console.log('Store state before rendering', store.getState());
-
-        var routerContext = React.createElement(RouterContext, renderProps);
+        // console.log('Store state before rendering', context.store.getState());
 
         return {
-            html: renderToString(
-                React.createElement(
-                    WrapperProvider,
-                    {initialProps: initialProps},
-                    (store
-                        ? React.createElement(Provider, {store: store}, routerContext)
-                        : routerContext)
-                )
-            )
+            html: renderToString(React.createElement(
+                StaticRouter,
+                {location: req.url, context: context},
+                options.app({
+                    props: initialProps,
+                    req: req,
+                    res: res,
+                    state: context.store ? context.store.getState() : undefined
+                })
+            ))
         };
 
     }).catch(function renderErrorHandler(e) {
 
-        if (isRedirect(res) || e.static) throw e;
+        if (isRedirect(res)) throw e;
 
         // If we end up here it means server-side error that can't be handled by application
         // By returning an object we are recovering from error
@@ -215,21 +161,19 @@ function middleware(options, routes, history, template, req, res, next) {
     }).then(function renderAndSendHtml(result) {
 
         if (result.error) {
-            result.error = setErrorStatus(res, result.error);
+            setErrorStatus(res, result.error);
         } else {
-            res.status(Cmp && !Cmp.notFound ? httpCodes.ok : httpCodes.notFound);
+            res.status(context.code || httpCodes.ok);
         }
 
         res.send(renderHTML(
             lib.extends({
-                component: Cmp,
                 error: null,
                 initialProps: initialProps,
                 html: '',
-                renderProps: renderProps,
                 req: req,
                 res: res,
-                store: store,
+                store: context.store,
                 template: template
             }, result), // appends error or html
             options
@@ -237,9 +181,9 @@ function middleware(options, routes, history, template, req, res, next) {
 
     }).catch(function finalErrorHandler(e) {
 
-        if (isRedirect(res) || e.static) return;
+        if (isRedirect(res)) return;
 
-        e = setErrorStatus(res, e);
+        setErrorStatus(res, e);
 
         res.send(errorTemplate({
             error: e,
@@ -256,5 +200,6 @@ function middleware(options, routes, history, template, req, res, next) {
 
 exports.middleware = middleware;
 exports.errorTemplate = errorTemplate;
+exports.defaultTemplate = defaultTemplate;
 exports.renderHTML = renderHTML;
 exports.waitForTemplate = waitForTemplate;

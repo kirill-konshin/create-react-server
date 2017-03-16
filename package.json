@@ -1,6 +1,6 @@
 {
   "name": "create-react-server",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Server & middleware for React + Router + Redux with Server Side Rendering",
   "scripts": {
     "test": "jest",
@@ -35,7 +35,7 @@
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-redux": "^5.0.3",
-    "react-router": "^3.0.5",
+    "react-router-dom": "^4.0.0",
     "redux": "^3.6.0"
   },
   "dependencies": {
@@ -50,7 +50,7 @@
     "react": "*",
     "react-dom": "*",
     "react-redux": "*",
-    "react-router": "3.*"
+    "react-router": "4.*"
   },
   "author": "Kirill Konshin",
   "repository": {
