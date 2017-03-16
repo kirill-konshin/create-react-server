@@ -6,7 +6,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = createConfig([
     entryPoint({
-        index: './src/index.js'
+        index: '../create-react-app/src/index.js'
     }),
     setOutput({
         path: __dirname + '/build',

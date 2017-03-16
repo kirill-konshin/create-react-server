@@ -1,10 +1,15 @@
 "use strict";
 
 var fs = require('fs');
-var path = require('path');
+var path = require("path");
+var url = require("url");
 var express = require('express');
-var createMemoryHistory = require("react-router").createMemoryHistory;
 var utils = require('./utils');
+
+var roots = [
+    '/',
+    '/index.html'
+];
 
 var skippedExtensions = [
     '.coffee',
@@ -48,8 +53,7 @@ function createWebpackMiddleware(compiler, config) {
 }
 
 /**
- * @param {function} options.createRoutes function must return routes or routes config for React Router
- * @param {function} [options.createStore] if set function must return an instance of Redux Store with initial state
+ * @param {function} options.app({state, props, req, res})
  * @param {function} [options.template] main [template function](#template-function), performs injection of rendered HTML to the template, default = replaces `<div id="root"></div>` with `<div id="root">%HTML%</div>`
  * @param {string} [options.outputPath] path with static files, usually equals to Webpack's `output.path`
  * @param {string} [options.templatePath] path to `index.html`, default = `%outputPath%/index.html`
@@ -63,25 +67,41 @@ function createExpressMiddleware(options) {
 
     options = options || {};
 
-    //TODO Create every time?
-    var history = createMemoryHistory();
-    var routes = options.createRoutes();
-
     options.fs = options.fs || fs;
+    options.outputPath = options.outputPath || path.join(process.cwd(), 'build');
+    options.templatePath = options.templatePath || path.join(options.outputPath, 'index.html');
+    options.initialStateKey = options.initialStateKey || '__INITIAL__STATE__';
+    options.initialPropsKey = options.initialPropsKey || '__INITIAL__PROPS__';
+    options.template = options.template || utils.defaultTemplate;
 
     return function(req, res, next) {
-        utils.waitForTemplate(options).then(function(template){
-            utils.middleware(options, routes, history, template, req, res, next);
+
+        utils.waitForTemplate(options).then(function(template) {
+
+            var location = url.parse(req.url, true);
+
+            if (
+                options.fs.existsSync(path.join(options.outputPath, location.pathname)) &&
+                !~roots.indexOf(location.pathname)
+            ) {
+                if (options.debug) console.log('Static', location.pathname);
+                next();
+                return;
+            }
+
+            if (options.debug) console.log('Rendering', location.pathname + location.search);
+
+            return utils.middleware(options, template, req, res, next);
+
         });
     }
 
 }
 
 /**
- * @param {string} options.outputPath path with static files, usually equals to Webpack's `output.path`
- * @param {function} options.createRoutes function must return routes or routes config React Router
- * @param {function} [options.createStore] if set function must return an instance of Redux Store with initial state
+ * @param {function} options.app({state, props, req, res})
  * @param {function} [options.template] main [template function](#template-function), performs injection of rendered HTML to the template, default = replaces `<div id="root"></div>` with `<div id="root">%HTML%</div>`
+ * @param {string} [options.outputPath] path with static files, usually equals to Webpack's `output.path`
  * @param {string} [options.templatePath] path to `index.html`, default = `%outputPath%/index.html`
  * @param {boolean} [options.debug] emits to console some extra information about request handling, default = `false`
  * @param {object} [options.fs] internal option used to pass an instance of file system object

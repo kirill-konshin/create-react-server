@@ -1,5 +1,5 @@
 var React = require('react');
-var withRouter = require('react-router').withRouter;
+var withRouter = require('react-router-dom').withRouter;
 var hoistStatics = require('hoist-non-react-statics');
 var lib = require('./lib');
 
@@ -40,8 +40,25 @@ function withWrapper(Cmp) {
             var self = this;
 
             // On NodeJS setState is a no-op, besides, getInitialProps will be called by server rendering procedure
+            if (isNode()) {
+
+                // if (!this.state.initialLoading) return;
+                //match, location, history, staticContext
+
+                this.props.staticContext.store = this.context.store; //FIXME Brutal access to Redux Provider's store
+
+                this.props.staticContext.location = this.props.location;
+
+                if (Cmp.getInitialProps) {
+                    this.props.staticContext.getInitialProps = Cmp.getInitialProps.bind(Cmp);
+                }
+
+                return;
+
+            }
+
             // On client side this function should not be called if props were passed from server
-            if (isNode() || !this.state.initialLoading) return;
+            if (!this.state.initialLoading) return;
 
             return new Promise(function(res) {
 
