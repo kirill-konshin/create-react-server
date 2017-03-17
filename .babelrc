@@ -1,0 +1,8 @@
+{
+  "presets": [
+    "react-app"
+  ],
+  "plugins": [
+    "transform-ensure-ignore"
+  ]
+}

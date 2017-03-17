@@ -19,9 +19,9 @@ try {
 
     var argv = require('yargs')
         .usage(
-            'Usage: $0 --createRoutes path-to-router.js [...options]\n\n' +
+            'Usage: $0 --app path-to-app.js [...options]\n\n' +
             'All specified JS files must export functions as default export or as module.exports.\n' +
-            'All options except --createRoutes are not required.'
+            'All options except --app are not required.'
         )
         .help()
         .version(function() {
@@ -31,14 +31,10 @@ try {
         .wrap(null)
         .group(['createRoutes', 'createStore', 'template'], 'JS Files')
         .group(['outputPath', 'templatePath'], 'Paths')
-        .option('createRoutes', {
+        .option('app', {
             demandOption: true,
-            alias: 'r',
-            describe: 'JS file with createRoutes() function '
-        })
-        .option('createStore', {
-            alias: 's',
-            describe: 'JS file with createStore() function'
+            alias: 'a',
+            describe: 'JS file with app({state, props}) function '
         })
         .option('template', {
             alias: 't',
@@ -93,18 +89,14 @@ try {
     var templatePath = path.join(cwd, argv.templatePath);
 
     // Functions
-    var createRoutes = getFunction(argv.createRoutes, 'Router');
-    var createStore = argv.createStore ? getFunction(argv.createStore, 'Redux Store') : null;
+    var app = argv.app ? getFunction(argv.app, 'App') : null;
     var template = argv.template ? getFunction(argv.template, 'Template') : null;
 
     console.log('Static:', outputPath);
     console.log('Template Path:', templatePath);
 
     createExpressServer({
-        createRoutes: createRoutes,
-        createStore: function(config) {
-            return createStore(undefined, config);
-        },
+        app: app,
         template: template,
         outputPath: outputPath,
         templatePath: templatePath,

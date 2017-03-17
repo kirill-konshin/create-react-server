@@ -12,14 +12,6 @@
     "testRegex": "(/src/.*\\.spec.js)$",
     "collectCoverage": true
   },
-  "babel": {
-    "presets": [
-      "react-app"
-    ],
-    "plugins": [
-      "transform-ensure-ignore"
-    ]
-  },
   "main": "src/index.js",
   "bin": {
     "create-react-server": "src/server.js"
@@ -33,20 +25,22 @@
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-redux": "^5.0.3",
-    "react-router": "^3.0.2",
+    "react-router": "^4.0.0",
+    "react-router-dom": "^4.0.0",
     "redux": "^3.6.0"
   },
   "dependencies": {
     "babel-register": "^6.24.0",
     "express": "^4.14.1",
     "hoist-non-react-statics": "^1.2.0",
+    "react-router": "^4.0.0",
     "yargs": "^7.0.2"
   },
   "peerDependencies": {
     "react": "*",
     "react-dom": "*",
     "react-redux": "*",
-    "react-router": "3.*"
+    "react-router": "4.*"
   },
   "author": "Kirill Konshin",
   "repository": {
