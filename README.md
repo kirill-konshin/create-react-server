@@ -17,6 +17,7 @@ Webpack Dev Middleware for simple and painless development and production usage.
 - [Use with Webpack Dev Middleware](#middleware) useful for 
 - [Use with React Helmet](#use-with-react-helmet)
 - [Asynchronous require](#asynchronous-require)
+- [Handling props updates](#handling-props-updates)
 
 ## Installation
 
@@ -531,4 +532,33 @@ And add it to `.babelrc` file or `babel` section of `package.json`:
 
 If you use dynamic `import()` function, then you will need more plugins `babel-plugin-dynamic-import-webpack`, it should
 be used together with `babel-plugin-transform-ensure-ignore`. Make sure it is used only on server, and Webpack (client
-build) will not pick it up. On client plugin `babel-plugin-syntax-dynamic-import` should be used. 
+build) will not pick it up. On client plugin `babel-plugin-syntax-dynamic-import` should be used.
+ 
+## Handling props updates
+
+Your component may receive props from React Router without unmounting/mounting, for example `query` or `param` has
+changed.
+
+In this case you can create a `componentWillReceiveProps` lifecycle hook and call `this.props.getInitialProps()` from
+it to force static `getInitialProps` method to be called again:
+
+```js
+export class Page extends React.Component {
+
+    static async getInitialProps({params}) {
+        var res = await fetch(`/pages?slug=${params.slug}`);
+        return await res.json();
+    }
+
+    componentWillReceiveProps(newProps) {
+        if (this.props.params.slug !== newProps.params.slug) this.props.getInitialProps();
+    }
+
+    render() {
+        // your stuff here
+    }
+
+}
+
+export default withWrapper(Page);
+```

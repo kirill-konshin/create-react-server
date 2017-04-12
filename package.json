@@ -1,6 +1,6 @@
 {
   "name": "create-react-server",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Server & middleware for React + Router + Redux with Server Side Rendering",
   "scripts": {
     "test": "jest",
@@ -33,13 +33,15 @@
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-redux": "^5.0.3",
-    "react-router": "^3.0.2",
+    "react-router": "^3.0.5",
     "redux": "^3.6.0"
   },
   "dependencies": {
     "babel-register": "^6.24.0",
+    "create-react-class": "^15.5.2",
     "express": "^4.14.1",
     "hoist-non-react-statics": "^1.2.0",
+    "prop-types": "^15.5.8",
     "yargs": "^7.0.2"
   },
   "peerDependencies": {

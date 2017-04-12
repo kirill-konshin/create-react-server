@@ -1,4 +1,6 @@
 var React = require('react');
+var PropTypes = require('prop-types');
+var createClass = require('create-react-class');
 var withRouter = require('react-router').withRouter;
 var hoistStatics = require('hoist-non-react-statics');
 var lib = require('./lib');
@@ -13,13 +15,13 @@ function getDisplayName(Cmp) {
 
 function withWrapper(Cmp) {
 
-    var Wrapper = React.createClass({
+    var Wrapper = createClass({
 
         displayName: 'WithWrapper',
 
         contextTypes: {
-            store: React.PropTypes.any,
-            getInitialProps: React.PropTypes.func
+            store: PropTypes.any,
+            getInitialProps: PropTypes.func
         },
 
         getInitialState: function getInitialState() {
@@ -120,12 +122,12 @@ function withWrapper(Cmp) {
 
 }
 
-var WrapperProvider = React.createClass({
+var WrapperProvider = createClass({
 
     displayName: 'WrapperProvider',
 
     propTypes: {
-        initialProps: React.PropTypes.any
+        initialProps: PropTypes.any
     },
 
     defaultProps: {
@@ -133,7 +135,7 @@ var WrapperProvider = React.createClass({
     },
 
     childContextTypes: {
-        getInitialProps: React.PropTypes.func
+        getInitialProps: PropTypes.func
     },
 
     getChildContext: function getChildContext() {
