@@ -7,8 +7,7 @@ cache:
 deploy:
   provider: npm
   email: kirill.konshin@gmail.com
-  api_key:
-    secure: HNtemXD+Dj8hp7E3aKwRdPqzrx7s143IFA9mTRA5Z61T8afI4kX3HB2flmrMdq2dOzi7ujlf7zDEvA6JSWHhXYdY1UOF1OHjt/+hq4p17us5wh5Lqmyf9XXIwjJqW57BhJHLO8tw6EEzaMlZb/AjeOLEWuds0949Hx410YeccXqKQQSSgwuKUTpcH/vPkegXAK9m+Xbhxpp+rN3HlbvlKveh4Dm3LrpPTHIgtLjLtA6S7pwSX7qkNlLVB7YCUUzRzil6TDwzgBV7y+b/U7qA9WfU/07bl/p/4CEnf0/KfnT82OGIDr5yRVs5fCF13Em6stou3BKGmOFUN2OUC7XsaRbvcEeRxtia5BraYlEf/VgVr2bhJ5sNrXqBm6fWfkYt/ft4XC32d5KAw47p6fBwmaXnNKnwSKquVq0xydO+i9NW/77qhjMaXEqqBDd8qMnyyPrwvyR1SfnoFp0ZIF1dVjwiKQCXLCsnOeRQfpHdBTA9OME1O3XxrnpQdk2UetXsQwic0FhhrEEpefce2CMkkmVPilyNl5/9nmptDzBqQeZrTDLv0drXHYSXQ//oWzylXFP8m1S4YReJWQa1AluLlu186V1WsreP+GeeCtTq7KMFk4g/AERSmACaHfT9VYRhB13r1f9i50w3XCC2IJWIeoZocHzk3z/d/AjFeS98fH8=
+  api_key: $NPM_TOKEN
   skip_cleanup: true
   on:
     tags: true

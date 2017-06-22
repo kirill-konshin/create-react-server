@@ -1,9 +1,9 @@
-import {rewind} from "react-helmet";
+import Helmet from "react-helmet";
 
 export default ({template, html, error}) => {
 
     //@see https://github.com/nfl/react-helmet#server-usage
-    const head = rewind();
+    const head = Helmet.renderStatic();
 
     const errorHtml = error
         ? `<div id="server-error"><h1>Server Error</h1><pre>${error.stack || error}</pre></div>`

@@ -22,7 +22,7 @@ Webpack Dev Middleware for simple and painless development and production usage.
 ## Installation
 
 ```bash
-npm install create-react-server babel-preset-react-app --save-dev
+npm install create-react-server babel-preset-react-app babel-preset-es2015 --save-dev
 ```
 
 You don't have to install `babel-preset-react-app` if you use Create React App, it will be pre-installed already.
@@ -51,6 +51,7 @@ npm run redeploy # launch in production mode
 ```json
 {
     "presets": [
+      "es2015",
       "react-app"
     ]
 }
@@ -232,7 +233,7 @@ Available options:
 - `--template` or `-t` path to JS file with `template` function
 - `--outputPath` or `-o` as path to your `build` (e.g. your static files)
 - `--templatePath` or `-i` path to your `index.html`
-- `--debug` or `-d` if you want to get more information of requests handling
+- `--debug` or `-d` if you want to get more information of requests handling & stack traces of errors
 - `--port` or `-p` to bind to something other than `3000`, port will also be automatically taken from `process.env.PORT`
 
 
@@ -522,6 +523,7 @@ And add it to `.babelrc` file or `babel` section of `package.json`:
 ```json
 {
     "presets": [
+      "es2015",
       "react-app"
     ],
     "plugins": [
