@@ -3,7 +3,7 @@ import Express from "express";
 import MemoryFileSystem from "memory-fs";
 import React from "react";
 import {createStore} from "redux";
-import {Redirect, Route, Switch} from "react-router";
+import {Redirect, Route, Switch} from "react-router-dom";
 import {connect, Provider} from "react-redux";
 import {createExpressMiddleware} from "./index";
 import {withWrapper, WrapperProvider} from "./wrapper";

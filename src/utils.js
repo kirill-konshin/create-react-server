@@ -1,7 +1,7 @@
 var path = require("path");
 var renderToString = require("react-dom/server").renderToString;
 var React = require("react");
-var StaticRouter = require("react-router").StaticRouter;
+var StaticRouter = require("react-router-dom").StaticRouter;
 var lib = require("./lib");
 
 var httpCodes = {
