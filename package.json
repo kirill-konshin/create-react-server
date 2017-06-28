@@ -3,10 +3,7 @@
   "version": "0.3.0",
   "description": "Server & middleware for React + Router + Redux with Server Side Rendering",
   "scripts": {
-    "test": "jest",
-    "build": "npm run clean && NODE_ENV=production webpack --progress",
-    "start": "NODE_ENV=development babel-node ./server.js",
-    "server": "NODE_ENV=production babel-node ./server.js"
+    "test": "jest"
   },
   "jest": {
     "testRegex": "(/src/.*\\.spec.js)$",
