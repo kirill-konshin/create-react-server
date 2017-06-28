@@ -122,26 +122,54 @@ export default class NotFound extends Component {
 }
 ```
 
-### Router
+### Main App
 
-React Router is mandatory for this pacakge, so you have to make a `createRoutes` function that should return routes or
-routes config for React Router:
+You have to make a `createApp` function that should return an app with React Router routes.
+
+**!!!ATTENTION!!! Due to changes in React Router 4 async routes are no longer supported by this package! Not at this
+moment at least, stay tuned, we will try to add this in future releases!**
 
 ```js
-// src/routes.js
+// src/app.js
 
 import React from "react";
 import {Route, IndexRoute} from "react-router";
 import NotFound from './NotFound';
 import Page from './Page';
+import IndexPage from './IndexPage';
 
-export default function() {
-    return <Route path="/">
-        <IndexRoute component={Page}/>
-        <Route path="*" component={NotFound}/>
-    </Route>;
-}
+export default ({state, props, req, res}) => {
+
+    if (!state && !!req) { // this means function is called on server
+        state = {
+            'foo': req.url + ':' + Date.now()
+        };
+    }
+
+    return (
+        <Provider store={createStore(state)}>
+            <WrapperProvider initialProps={props}>
+                <Switch>
+                    <Route exact path="/" component={IndexPage}/>
+                    <Route path="/page" component={Page}/>
+                    <Route component={NotFound}/>
+                </Switch>
+            </WrapperProvider>
+        </Provider>
+    );
+
+};
 ```
+
+If you don't use Redux then `Provider` is not needed.
+
+Parameters that function receives are (all parameters may be `null` depending on where the function is launched, you may
+have custom logic specifically for server or client based on what paratements are available):
+
+- `state` &mdash; initial Redux state received from server (if any)
+- `props` &mdash; initial props received from server (if any)
+- `req` &mdash; NodeJS Request (if any)
+- `res` &mdash; NodeJS Response (if any)
 
 ### Redux (optional)
 
@@ -168,46 +196,27 @@ export default function (initialState, {req, res}) {
 
 ### Main App Entry Point
 
-This  hackery is especially required if you use async routes:
+You have to create a root app component, which normally consists only of `BrowserRouter` or `HashRouter` and a call to
+`createApp`.
 
 ```js
 // src/index.js
 
 import React from "react";
 import {render} from "react-dom";
-import {browserHistory, match, Router} from "react-router";
-import {WrapperProvider} from "create-react-server/wrapper";
-
-import createRoutes from "./routes";
-
-const mountNode = document.getElementById('root');
+import {BrowserRouter} from "react-router-dom";
+import createApp from "./app";
 
 const Root = () => (
-    <WrapperProvider initialProps={window.__INITIAL__PROPS__}>
-        <Router history={browserHistory}>
-            {createRoutes()}
-        </Router>
-    </WrapperProvider>
+    <BrowserRouter>
+        {createApp({
+            state: window.__INITIAL_STATE__, // you can skip this if you don't use Redux
+            props: window.__INITIAL__PROPS__
+        })}
+    </BrowserRouter>
 );
 
-render((<Root/>), mountNode);
-```
-
-If you use Redux then Root constant will be slightly different, it should have Redux `Provider`:
-
-```js
-import {Provider} from "react-redux";
-import createStore from "./store";
-
-const Root = () => (
-    <Provider store={createStore(window.__INITIAL_STATE__)}>
-        <WrapperProvider initialProps={window.__INITIAL__PROPS__}>
-            <Router history={browserHistory}>
-                {createRoutes()}
-            </Router>
-        </WrapperProvider>
-    </Provider>
-);
+render((<Root/>), document.getElementById('root'));
 ```
 
 ## CLI Mode
@@ -219,17 +228,16 @@ It is convenient to put console command into `scripts` section of `package.json`
 ```json
 {
     "build": "react-scripts build",
-    "server": "create-react-server --createRoutes path-to-routes.js [--createStore path-to-store.js] [options]"
+    "server": "create-react-server --app path-to/src/app.js [options]"
 }
 ```
 
 All specified JS files must export functions as `default export` or as `module.exports`. It assumes that
-`--createRoutes path-to-routes.js` as path to file which exports a `createRoutes` and so on.
+`--app path-to-app.js` as path to file which exports a `createApp` and so on.
 
 Available options:
 
-- `--createRoutes` or `-r` path to JS file with `createRoutes` function
-- `--createStore` or `-s` path to JS file with `createStore` function
+- `--app` or `-r` path to JS file with `createApp` function
 - `--template` or `-t` path to JS file with `template` function
 - `--outputPath` or `-o` as path to your `build` (e.g. your static files)
 - `--templatePath` or `-i` path to your `index.html`
@@ -250,7 +258,6 @@ npm run build
 npm run server
 ```
 
-
 Now if you open `http://localhost:3000` you will see a page rendered on the server.
 
 ## Config
@@ -258,8 +265,7 @@ Now if you open `http://localhost:3000` you will see a page rendered on the serv
 Middleware accepts following options:
 
 - `options.outputPath` **required** path with static files, usually equals to Webpack's `output.path`
-- `options.createRoutes()` **required** function must return routes or routes config for React Router
-- `options.createStore({req, res})` *optional* if set function must return an instance of Redux Store with initial state
+- `options.app({props, state, req, res})` **required** function must return an app that uses React Router 
 - `options.template` *optional*, main [template function](#template-function), performs injection of rendered HTML to
     the template, default = replaces `<div id="root"></div>` with `<div id="root">%HTML%</div>`
     completely failed to render
@@ -337,15 +343,12 @@ everything from `src` and puts the outcome to `build-lib`. You may add this dire
 // src/server.js
 
 import path from "path";
-import {rewind} from "react-helmet";
 import {createExpressServer} from "create-react-server";
-import createRoutes from "./routes";
-import createStore from "./store";
+import app from "./app";
 
 createExpressServer({
     port: process.env.PORT || 3000,
-    createRoutes: () => (createRoutes()),
-    createStore: ({req, res}) => (createStore({})),
+    app: app,
     template: ({template, html, req}) => (
         template.replace(
             `<div id="root"></div>`,
@@ -428,8 +431,7 @@ import path from "path";
 import Express from "express";
 import webpack from "webpack";
 import Server from "webpack-dev-server";
-import createRoutes from "./createRoutes"; // same file as in client side
-import createStore from "./src/createStore"; // same file as in client side
+import app from "./app"; // same file as in client side
 import config from "../webpack.config";
 import {createExpressMiddleware, createWebpackMiddleware, skipRequireExtensions} from "create-react-server";
 
@@ -438,10 +440,7 @@ skipRequireExtensions(); // this may be omitted but then you need to manually te
 const port = process.env.PORT || 3000;
 
 const options = {
-    createRoutes: createRoutes,
-    createStore: ({req, res}) => (createStore({
-        foo: Date.now() // pre-populate something right here
-    })),
+    app: app,
     template: ({template, html}) => (template.replace(
         // !!!!! MUST MATCH THE INDEX.HTML
         `<div id="root"></div>`,
@@ -484,14 +483,14 @@ folder.
 ## Use with React Helmet
 
 Take a look at React Helmet's [readme note about server side rendering](https://github.com/nfl/react-helmet#server-usage).
-In a few words you have to add `rewind()` call to your implementation of `template` option:
+In a few words you have to add `renderStatic()` call to your implementation of `template` option:
 
 ```js
-import {rewind} from "react-helmet";
+import Helmet from "react-helmet";
 
 const template = ({template, html, req}) => {
 
-    const head = rewind();
+    const head = Helmet.renderStatic();
 
     return template
         .replace(
@@ -535,7 +534,7 @@ And add it to `.babelrc` file or `babel` section of `package.json`:
 If you use dynamic `import()` function, then you will need more plugins `babel-plugin-dynamic-import-webpack`, it should
 be used together with `babel-plugin-transform-ensure-ignore`. Make sure it is used only on server, and Webpack (client
 build) will not pick it up. On client plugin `babel-plugin-syntax-dynamic-import` should be used.
- 
+
 ## Handling props updates
 
 Your component may receive props from React Router without unmounting/mounting, for example `query` or `param` has
