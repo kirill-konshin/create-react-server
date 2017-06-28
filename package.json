@@ -49,8 +49,7 @@
   "peerDependencies": {
     "react": "*",
     "react-dom": "*",
-    "react-redux": "*",
-    "react-router": "4.*"
+    "react-router-dom": ">=4.0.0"
   },
   "author": "Kirill Konshin",
   "repository": {
