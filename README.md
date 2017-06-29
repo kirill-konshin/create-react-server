@@ -9,6 +9,7 @@ Webpack Dev Middleware for simple and painless development and production usage.
 
 - [Installation](#installation)
 - [Examples](#examples)
+- [Async Routes](#async-routes)
 - [Preconditions](#preconditions)
 - [CLI mode](#cli-mode) — simple integration with Create React App (aka React Scripts)
 - [Config](#config)
@@ -43,6 +44,23 @@ cd examples/[any-example]
 npm install
 npm run redeploy # launch in production mode
 ```
+
+## Async Routes
+
+**!!!ATTENTION!!! Due to changes in React Router 4 async routes are no longer supported by this package!**
+
+Official RR4 documentation says the following: 
+
+> 1. You need synchronous module resolution on the server so you can get those bundles in the initial render.    
+> 2. You need to load all the bundles in the client that were involved in the server render before rendering so that
+> the client render is the same as the server render. (The trickiest part, I think its possible but this is where
+> I gave up.)   
+> 3. You need asynchronous resolution for the rest of the client app’s life.
+
+[Code Splitting & Server Rendering](https://reacttraining.com/react-router/web/guides/code-splitting/code-splitting-server-rendering)
+
+So not at this moment at least, stay tuned, we will try to add this in future releases! Especially if React Fiber (16)
+will take care of some async component lifecycle.
 
 ## Preconditions
 
@@ -125,9 +143,6 @@ export default class NotFound extends Component {
 ### Main App
 
 You have to make a `createApp` function that should return an app with React Router routes.
-
-**!!!ATTENTION!!! Due to changes in React Router 4 async routes are no longer supported by this package! Not at this
-moment at least, stay tuned, we will try to add this in future releases!**
 
 ```js
 // src/app.js
