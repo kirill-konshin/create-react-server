@@ -51,7 +51,7 @@
   "author": "Kirill Konshin",
   "repository": {
     "type": "git",
-    "url": "git://github.com/kirill-konshin/rcreate-react-server.git"
+    "url": "git://github.com/kirill-konshin/create-react-server.git"
   },
   "bugs": {
     "url": "https://github.com/kirill-konshin/create-react-server/issues"
