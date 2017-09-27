@@ -4,11 +4,12 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "server": "node ../../src/server.js --app src/app.js --template template.js",
-    "redeploy": "npm run build && npm run server"
+    "redeploy": "npm run build && npm run server",
+    "postinstall": "linklocal"
   },
   "babel": {
     "presets": [
-      "es2015",
+      "env",
       "react-app"
     ],
     "plugins": [
@@ -16,21 +17,23 @@
     ]
   },
   "dependencies": {
-    "es6-promise": "^4.1.0",
+    "create-react-server": "file:../..",
+    "es6-promise": "^4.1.1",
     "isomorphic-fetch": "^2.2.1",
-    "react": "^15.4.2",
-    "react-dom": "^15.4.2",
-    "react-helmet": "^5.1.3",
-    "react-redux": "^5.0.3",
-    "react-router-dom": "^4.0.0",
-    "redux": "^3.6.0",
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0",
+    "react-helmet": "^5.2.0",
+    "react-redux": "^5.0.6",
+    "react-router-dom": "^4.2.2",
+    "redux": "^3.7.2",
     "redux-logger": "^3.0.6",
-    "redux-promise-middleware": "^4.2.0",
+    "redux-promise-middleware": "^4.4.1",
     "redux-thunk": "^2.2.0"
   },
   "devDependencies": {
     "babel-plugin-transform-ensure-ignore": "^0.1.0",
-    "babel-preset-es2015": "^6.24.1",
-    "react-scripts": "^1.0.7"
+    "babel-preset-env": "^1.6.0",
+    "linklocal": "^2.8.1",
+    "react-scripts": "^1.0.14"
   }
 }

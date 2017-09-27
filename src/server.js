@@ -12,6 +12,7 @@ try {
     var fs = require('fs');
     var createExpressServer = require('./index').createExpressServer;
     var cwd = process.cwd();
+    var pkg = require('../package.json');
 
     process.on('unhandledRejection', (reason, promise) => {
         console.error('Unhandled rejection:', debug && reason.stack ? reason.stack : reason.toString());
@@ -24,9 +25,7 @@ try {
             'All options except --app are not required.'
         )
         .help()
-        .version(function() {
-            return require('../package.json').version;
-        })
+        .version(pkg.version)
         .alias('version', 'v')
         .wrap(null)
         .group(['createRoutes', 'createStore', 'template'], 'JS Files')

@@ -140,7 +140,7 @@ test('utils.middleware success with store', async() => {
         '<script type="text/javascript">window["iState"] = {"foo":"dispatched"};</script>' +
         '<script type="text/javascript">window["iProps"] = {};</script>' +
         '</head><body><div id="app">' +
-        '<span data-reactroot="" data-reactid="1" data-react-checksum="1511724113">dispatched</span>' +
+        '<span data-reactroot="">dispatched</span>' +
         '</div></body></html>'
     );
 
@@ -181,7 +181,7 @@ test('utils.middleware success with custom initial state', async() => {
         '<script type="text/javascript">window["iState"] = {"foo":"override"};</script>' +
         '<script type="text/javascript">window["iProps"] = {};</script>' +
         '</head><body><div id="app">' +
-        '<span data-reactroot="" data-reactid="1" data-react-checksum="839848856">override</span>' +
+        '<span data-reactroot="">override</span>' +
         '</div></body></html>'
     );
 
@@ -209,7 +209,7 @@ test('utils.middleware no store success', async() => {
         '<script type="text/javascript">window["iState"] = undefined;</script>' +
         '<script type="text/javascript">window["iProps"] = {"foo":"initial"};</script>' +
         '</head><body><div id="app">' +
-        '<div data-reactroot="" data-reactid="1" data-react-checksum="-228912572">initial</div>' +
+        '<div data-reactroot="">initial</div>' +
         '</div></body></html>'
     );
 
@@ -237,7 +237,7 @@ test('utils.middleware 404', async() => {
         '<script type="text/javascript">window["iState"] = undefined;</script>' +
         '<script type="text/javascript">window["iProps"] = {"foo":"initial"};</script>' +
         '</head><body><div id="app">' +
-        '<div data-reactroot="" data-reactid="1" data-react-checksum="-228912572">initial</div>' +
+        '<div data-reactroot="">initial</div>' +
         '</div></body></html>'
     );
 
@@ -307,7 +307,7 @@ test('utils.middleware 500 when bad initialProps', async() => {
         '<script type="text/javascript">window["iState"] = undefined;</script>' +
         '<script type="text/javascript">window["iProps"] = {"initialError":"Bad Initial Props"};</script>' +
         '</head><body><div id="app">' +
-        '<div data-reactroot="" data-reactid="1" data-react-checksum="-1262873217">Bad Initial Props</div>' +
+        '<div data-reactroot="">Bad Initial Props</div>' +
         '</div></body></html>'
     );
 

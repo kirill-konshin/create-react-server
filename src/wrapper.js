@@ -141,20 +141,6 @@ function withWrapper(Cmp) {
 
 var WrapperProvider = createClass({
 
-    displayName: 'WrapperProvider',
-
-    propTypes: {
-        initialProps: PropTypes.any
-    },
-
-    defaultProps: {
-        initialProps: null
-    },
-
-    childContextTypes: {
-        getInitialProps: PropTypes.func
-    },
-
     getChildContext: function getChildContext() {
         var self = this;
         return {
@@ -176,6 +162,20 @@ var WrapperProvider = createClass({
     }
 
 });
+
+WrapperProvider.displayName = 'WrapperProvider';
+
+WrapperProvider.propTypes = {
+    initialProps: PropTypes.any
+};
+
+WrapperProvider.defaultProps = {
+    initialProps: null
+};
+
+WrapperProvider.childContextTypes = {
+    getInitialProps: PropTypes.func
+};
 
 exports.withWrapper = withWrapper;
 exports.WrapperProvider = WrapperProvider;

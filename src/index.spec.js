@@ -98,7 +98,7 @@ test('createExpressMiddleware e2e success', async() => {
             '<script type="text/javascript">window["__INITIAL__STATE__"] = {"foo":"dispatched"};</script>' +
             '<script type="text/javascript">window["__INITIAL__PROPS__"] = {"custom":"initial"};</script>' +
             '</head><body><div id="app">' +
-            '<span data-reactroot="" data-reactid="1" data-react-checksum="289216439">dispatched|initial</span>' +
+            '<span data-reactroot="">dispatched|initial</span>' +
             '</div></body></html>'
         );
 

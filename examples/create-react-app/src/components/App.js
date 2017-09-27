@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import {connect} from "react-redux";
 import {Link} from "react-router-dom";
-import {withWrapper} from "../../../../wrapper"; // this should be create-react-server/wrapper
+import {withWrapper} from "create-react-server/wrapper";
 import {barAction} from "../store";
 import Helmet from "./Helmet";
 

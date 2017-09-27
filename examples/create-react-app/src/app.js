@@ -1,7 +1,7 @@
 import React from "react";
 import {Provider} from "react-redux";
 import {Route, Switch} from "react-router";
-import {WrapperProvider} from "../../../wrapper"; // this should be create-react-server/wrapper
+import {WrapperProvider} from "create-react-server/wrapper";
 import NotFound from "./components/NotFound";
 import App from "./components/App";
 import Page from "./components/Page";
