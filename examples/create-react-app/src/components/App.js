@@ -3,7 +3,11 @@ import {connect} from "react-redux";
 import {Link} from "react-router-dom";
 import {withWrapper} from "create-react-server/wrapper";
 import {barAction} from "../store";
+import jpg from "../images/js.jpg";
+import png from "../images/js.png";
 import Helmet from "./Helmet";
+
+console.log(jpg);
 
 const Loading = ({state}) => (<div>Loading: {state}...</div>);
 
@@ -49,6 +53,9 @@ export class App extends Component {
                 <button onClick={this.getPropsAgain.bind(this)}>Get Props Again</button>
                 <hr/>
                 <Link to="/page">Open page</Link>
+                <hr/>
+                <img src={jpg} width="50" height="50" alt="JPG"/>
+                <img src={png} width="50" height="50" alt="PNG"/>
             </div>
         );
 

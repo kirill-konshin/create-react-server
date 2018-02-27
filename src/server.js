@@ -11,8 +11,11 @@ try {
     var path = require('path');
     var fs = require('fs');
     var createExpressServer = require('./index').createExpressServer;
+    var skipRequireExtensions = require('./index').skipRequireExtensions;
     var cwd = process.cwd();
     var pkg = require('../package.json');
+
+    skipRequireExtensions();
 
     process.on('unhandledRejection', (reason, promise) => {
         console.error('Unhandled rejection:', debug && reason.stack ? reason.stack : reason.toString());
